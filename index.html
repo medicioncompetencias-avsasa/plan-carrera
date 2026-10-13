@@ -18,17 +18,16 @@
 <script>
 const CONFIG = {
   // 1) Pega la misma configuración de Firebase del artefacto administrativo (☁ Nube).
-  firebase:{
-  "apiKey": "AIzaSyCJAoAWJhIQoYBi8jXIYfqrGWi30IJKA9s",
-  "authDomain": "cartografia-talento.firebaseapp.com",
-  "projectId": "cartografia-talento",
-  "storageBucket": "cartografia-talento.firebasestorage.app",
-  "messagingSenderId": "42862317480",
-  "appId": "1:42862317480:web:7926aafd9bf37c6224979d",
-  "measurementId": "G-DZ5LYFJG9H"
-},
+  firebase: {
+    // apiKey: "...",
+    // authDomain: "cartografia-talento.firebaseapp.com",
+    // projectId: "cartografia-talento",
+    // storageBucket: "...",
+    // messagingSenderId: "...",
+    // appId: "..."
+  },
   // 2) El mismo código de organización que usas en el artefacto.
-  orgCode: "Competencias2026",
+  orgCode: "",
   // 3) Marca.
   nombreOrg: "AVSA",
   titulo: "Plan Carrera",
@@ -313,6 +312,47 @@ const PREGUNTAS = [
   .post-cod{margin-left:auto;background:var(--negro);color:var(--dorado);font-weight:800;
     letter-spacing:.07em;font-size:15px;padding:8px 15px;border-radius:9px;}
 
+  /* ================= FORMACIÓN ================= */
+  .form-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;}
+  .form-tab{padding:9px 20px;border-radius:20px;border:2px solid var(--gris-medio);background:none;
+    font-family:inherit;font-size:15px;font-weight:600;color:var(--gris-oscuro);cursor:pointer;transition:all .18s;}
+  .form-tab:hover{border-color:var(--dorado);color:var(--dorado);}
+  .form-tab.activa{background:var(--negro);border-color:var(--negro);color:var(--dorado);}
+  .inst-bloque{margin-bottom:36px;}
+  .inst-titulo{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .inst-logo{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;letter-spacing:-.01em;flex-shrink:0;}
+  .inst-logo.azul{background:#1A3A5C;color:#E8C87A;}
+  .inst-logo.verde-osc{background:#1C3D28;color:#7DC47D;}
+  .inst-logo.cafe{background:#3D2B1F;color:#E8C87A;}
+  .inst-logo.morado{background:#2B1D3D;color:#C8A0E8;}
+  .inst-logo.rojo{background:#3D1C1C;color:#E87A7A;}
+  .inst-nombre{font-size:18px;font-weight:800;letter-spacing:-.01em;}
+  .inst-desc{font-size:14px;color:var(--gris-oscuro);margin:0;}
+  .prog-rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .prog-card{border:1.5px solid var(--gris-medio);border-radius:var(--r);padding:20px;
+    display:flex;flex-direction:column;gap:10px;transition:border-color .18s,box-shadow .18s;}
+  .prog-card:hover{border-color:var(--dorado);box-shadow:0 4px 18px rgba(200,162,74,.12);}
+  .prog-card h4{margin:0;font-size:16px;font-weight:700;line-height:1.3;color:var(--negro);}
+  .prog-meta{display:flex;gap:8px;flex-wrap:wrap;}
+  .prog-badge{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:20px;
+    background:var(--crema);color:#6B551F;}
+  .prog-badge.gratis{background:#E8F3EC;color:#2D6B46;}
+  .prog-badge.presencial{background:#EDF2FA;color:#1C3D70;}
+  .prog-valor{font-size:15px;font-weight:700;color:var(--negro);margin-top:auto;}
+  .prog-valor span{font-size:13px;font-weight:500;color:var(--gris-oscuro);}
+  .prog-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;
+    color:var(--dorado-hondo);text-decoration:none;margin-top:4px;}
+  .prog-link:hover{text-decoration:underline;}
+  .prog-link-aviso{font-size:13.5px;color:var(--gris-oscuro);font-style:italic;}
+  .form-cat-titulo{font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;}
+  .form-cat-sub{font-size:15px;color:var(--gris-oscuro);margin:0 0 22px;}
+  @media (max-width:900px){
+    .prog-rejilla{grid-template-columns:1fr;}
+    .form-tabs{gap:8px;}
+    .form-tab{font-size:14px;padding:8px 16px;}
+  }
+
   /* ================= ESTADOS ================= */
   .aviso{padding:13px 22px;font-size:14.5px;line-height:1.5;}
   .aviso.demo{background:var(--crema);border-bottom:1px solid var(--dorado);color:#6B551F;}
@@ -568,8 +608,9 @@ function avisar(tipo,texto){
 const SECCIONES=[
   { id:'inicio',  et:'Inicio' },
   { id:'areas',   et:'Explora las áreas' },
-  { id:'mispost', et:'Mis postulaciones' },
-  { id:'faq',     et:'Preguntas frecuentes' }
+  { id:'mispost',   et:'Mis postulaciones' },
+  { id:'formacion', et:'Educación a tu medida' },
+  { id:'faq',       et:'Preguntas frecuentes' }
 ];
 function pintarMenu(){
   const nav=document.getElementById('menu');
@@ -579,7 +620,7 @@ function pintarMenu(){
     b.textContent=s.et;
     const activo=(s.id==='inicio'&&vista==='inicio')||
       (s.id==='areas'&&['ruta','cargo','evaluar','resultado','postular'].indexOf(vista)>=0)||
-      (s.id==='mispost'&&vista==='mispost')||(s.id==='faq'&&vista==='faq');
+      (s.id==='mispost'&&vista==='mispost')||(s.id==='formacion'&&vista==='formacion')||(s.id==='faq'&&vista==='faq');
     if(activo) b.classList.add('activo');
     b.addEventListener('click',()=>{
       nav.classList.remove('abierto');
@@ -635,6 +676,7 @@ function pintar(){
   else if(vista==='postular') vistaPostular();
   else if(vista==='listo') vistaListo();
   else if(vista==='mispost') vistaMisPostulaciones();
+  else if(vista==='formacion') vistaFormacion();
   else if(vista==='faq') vistaFaq();
 }
 
@@ -1096,6 +1138,263 @@ function vistaMisPostulaciones(){
       '<span class="post-cod">'+esc(p.codigo)+'</span>';
     f.appendChild(d);
   });
+}
+
+/* ---------- Formación y descuentos ---------- */
+const PORTAFOLIO=[
+  {
+    id:'pregrado',
+    label:'Pregrado',
+    desc:'11 programas en 6 instituciones',
+    instituciones:[
+      {
+        nombre:'UNIR',
+        sigla:'UNIR',
+        color:'azul',
+        programas:[
+          { nombre:'Ingeniería en Informática', modalidad:'Virtual', duracion:'9 semestres', valor:'$4.570.000', link:'https://estudiar.unir.edu.co/co/fco-esp-gr-ing-pregrado-ingenieria-informatica/' },
+          { nombre:'Contaduría Pública', modalidad:'Virtual', duracion:'10 cuatrimestres', valor:'$4.570.000', link:'https://estudiar.unir.edu.co/co/fco-esp-gr-em-pregrado-contaduria-publica/' }
+        ]
+      },
+      {
+        nombre:'UNAB',
+        sigla:'UNAB',
+        color:'cafe',
+        programas:[
+          { nombre:'Ingeniería Industrial', modalidad:'Virtual', duracion:'8 semestres', valor:'$2.779.950', link:'https://unab.edu.co/programas/ingenieria-industrial-virtual/' }
+        ]
+      },
+      {
+        nombre:'Universidad Santo Tomás',
+        sigla:'USTA',
+        color:'azul',
+        programas:[
+          { nombre:'Ingeniería de Sistemas', modalidad:'Virtual', duracion:'8 semestres', valor:'$3.910.000', link:'https://santotovirtual.edu.co/ingenieria-de-sistemas/' },
+          { nombre:'Ingeniería en Logística y Operaciones', modalidad:'Virtual', duracion:'8 semestres', valor:'$2.812.000', link:'https://santotovirtual.edu.co/ingenieria-en-logistica-y-operaciones/' }
+        ]
+      },
+      {
+        nombre:'UIS',
+        sigla:'UIS',
+        color:'verde-osc',
+        programas:[
+          { nombre:'Administración Agroindustrial', modalidad:'Distancia', duracion:'10 semestres', valor:'1.5 SMMLV / semestre', link:'https://pregrados.uis.edu.co/administracion-agroindustrial/' },
+          { nombre:'Gestión Empresarial', modalidad:'Distancia', duracion:'10 semestres', valor:'2 SMMLV / semestre', link:'https://pregrados.uis.edu.co/gestion-empresarial/' }
+        ]
+      },
+      {
+        nombre:'UTS',
+        sigla:'UTS',
+        color:'morado',
+        programas:[
+          { nombre:'Administración de Empresas', modalidad:'Presencial', duracion:'10 semestres', valor:'2 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/administracion-de-empresas/' },
+          { nombre:'Ingeniería Electrónica', modalidad:'Presencial', duracion:'10 semestres', valor:'2 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/ingenieria-electronica/' },
+          { nombre:'Ingeniería Electromecánica', modalidad:'Presencial', duracion:'10 semestres', valor:'2 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/ingenieria-electromecanica/' }
+        ]
+      },
+      {
+        nombre:'IU Digital de Antioquia',
+        sigla:'IUD',
+        color:'rojo',
+        programas:[
+          { nombre:'Ingeniería Mecatrónica', modalidad:'Híbrida', duracion:'9 semestres', valor:'1.75 SMMLV / semestre', link:'https://www.iudigital.edu.co/index.php/pregrado/ingenieria-mecatronica' }
+        ]
+      }
+    ]
+  },
+  {
+    id:'tecnologo',
+    label:'Tecnólogo',
+    desc:'9 programas en 3 instituciones',
+    instituciones:[
+      {
+        nombre:'UIS',
+        sigla:'UIS',
+        color:'verde-osc',
+        programas:[
+          { nombre:'Tecnología Agroindustrial', modalidad:'Distancia', duracion:'6 semestres', valor:'1 SMMLV / semestre', link:'https://pregrados.uis.edu.co/tecnologia-agroindustrial/' },
+          { nombre:'Tecnología Empresarial', modalidad:'Distancia', duracion:'6 semestres', valor:'1 SMMLV / semestre', link:'https://pregrados.uis.edu.co/tecnologia-empresarial/' }
+        ]
+      },
+      {
+        nombre:'UTS',
+        sigla:'UTS',
+        color:'morado',
+        programas:[
+          { nombre:'Tecnología en Gestión Agroindustrial', modalidad:'Presencial', duracion:'6 semestres', valor:'1.5 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/tecnologia-en-gestion-agroindustrial/' },
+          { nombre:'Tecnología en Operación y Mantenimiento Electromecánico', modalidad:'Presencial', duracion:'6 semestres', valor:'1.5 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/tecnologia-en-operacion-y-mantenimiento-electromecanico/' },
+          { nombre:'Tecnología en Implementación en Sistemas Electrónicos Industriales', modalidad:'Presencial', duracion:'6 semestres', valor:'1.5 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/tecnologia-en-implementacion-de-sistemas-electronicos-industriales/' },
+          { nombre:'Tecnología en Producción Industrial', modalidad:'Presencial', duracion:'6 semestres', valor:'1.5 SMMLV / semestre', link:'https://www.uts.edu.co/sitio/tecnologia-en-produccion-industrial/' },
+          { nombre:'Tecnología en Gestión Empresarial', modalidad:'Virtual', duracion:'6 semestres', valor:'1.5 SMMLV / semestre', link:'https://www.utsvirtual.edu.co/sitio/estudia-tecnologia-empresarial-virtual-uts-virtual/' }
+        ]
+      },
+      {
+        nombre:'IU Digital de Antioquia',
+        sigla:'IUD',
+        color:'rojo',
+        programas:[
+          { nombre:'Tecnología en Gestión Comercial Agroempresarial', modalidad:'Virtual', duracion:'6 semestres', valor:'1.75 SMMLV / semestre', link:'https://www.iudigital.edu.co/index.php/tecnologias/tecnologia-en-gestion-comercial-agroempresarial' },
+          { nombre:'Tecnología en Gestión Administrativa', modalidad:'Virtual', duracion:'6 semestres', valor:'1.75 SMMLV / semestre', link:'https://www.iudigital.edu.co/index.php/tecnologias/tecnologia-en-gestion-administrativa' }
+        ]
+      }
+    ]
+  },
+  {
+    id:'tecnico',
+    label:'Técnico',
+    desc:'3 programas en 3 instituciones',
+    instituciones:[
+      {
+        nombre:'UIS',
+        sigla:'UIS',
+        color:'verde-osc',
+        programas:[
+          { nombre:'Técnica Profesional en Producción Agropecuaria', modalidad:'Distancia', duracion:'4 semestres', valor:'1 SMMLV / semestre', link:'https://pregrados.uis.edu.co/tecnica-profesional-en-produccion-agropecuaria/' }
+        ]
+      },
+      {
+        nombre:'CENTAC',
+        sigla:'CEN',
+        color:'cafe',
+        programas:[
+          { nombre:'Técnico Laboral en Electricidad Industrial', modalidad:'Presencial', duracion:'5 meses', valor:'$2.900.000', aviso:'Convenio institucional — consultar con Medición por Competencias' }
+        ]
+      },
+      {
+        nombre:'Univ. Manuela Beltrán',
+        sigla:'UMB',
+        color:'azul',
+        programas:[
+          { nombre:'Técnico en Operación de Equipos Industriales y Actividades Mineras', modalidad:'Virtual', duracion:'4 meses', valor:'$2.343.400', link:'https://umbvirtual.edu.co/programa/operacion-de-equipos-industriales-y-actividades-mineras/', aviso:'Convenio institucional — consultar con Medición por Competencias' }
+        ]
+      }
+    ]
+  },
+  {
+    id:'cursos',
+    label:'Cursos',
+    desc:'14 programas — la mayoría gratis',
+    instituciones:[
+      {
+        nombre:'Coursera · U. de los Andes',
+        sigla:'COU',
+        color:'azul',
+        programas:[
+          { nombre:'Comunicación, experimentación y aprendizaje en liderazgo', modalidad:'Virtual · Gratis', duracion:'4 módulos, 22 h', valor:'Gratis', link:'https://www.coursera.org/learn/comunicacion-experimentacion-aprendizaje' },
+          { nombre:'Autoliderazgo y gestión de emociones para desafíos complejos', modalidad:'Virtual · Gratis', duracion:'4 módulos, 15 h', valor:'Gratis', link:'https://www.coursera.org/learn/autoliderazgo-gestion-emociones' },
+          { nombre:'Analítica financiera', modalidad:'Virtual · Gratis', duracion:'4 módulos, 20 h', valor:'Gratis', link:'https://www.coursera.org/learn/analitica-financiera' },
+          { nombre:'Analítica de Procesos: Optimización desde los Datos', modalidad:'Virtual · Gratis', duracion:'6 módulos, 15 h', valor:'Gratis', link:'https://www.coursera.org/learn/analitica-procesos-optimizacion-desde-datos' },
+          { nombre:'Analytics en las organizaciones', modalidad:'Virtual · Gratis', duracion:'6 módulos, 20 h', valor:'Gratis', link:'https://www.coursera.org/learn/analytics-analisis-datos' },
+          { nombre:'Formulación y evaluación de proyectos complejos', modalidad:'Virtual · Gratis', duracion:'6 módulos, 43 h', valor:'Gratis', link:'https://www.coursera.org/learn/formulacion-evaluacion-proyectos-ingenieria' }
+        ]
+      },
+      {
+        nombre:'Universidad Libre',
+        sigla:'ULI',
+        color:'verde-osc',
+        programas:[
+          { nombre:'Introducción a Power BI', modalidad:'Virtual · Gratis', duracion:'6 módulos, 20 h', valor:'Gratis', link:'https://www.unilibre.edu.co/educacion-continua/curso-rapido-introduccion-a-power-bi/' },
+          { nombre:'Introducción a la Gerencia Estratégica', modalidad:'Virtual · Gratis', duracion:'5 temáticas, 10 h', valor:'Gratis', link:'https://www.unilibre.edu.co/educacion-continua/curso-rapido-introduccion-a-la-gerencia-estrategica/' },
+          { nombre:'Introducción a la Inteligencia Artificial', modalidad:'Virtual · Gratis', duracion:'5 temáticas, 10 h', valor:'Gratis', link:'https://www.unilibre.edu.co/educacion-continua/curso-rapido-introduccion-a-la-inteligencia-artificial/' }
+        ]
+      },
+      {
+        nombre:'SENA',
+        sigla:'SENA',
+        color:'morado',
+        programas:[
+          { nombre:'Bases de Datos: Generalidades y Sistemas de Gestión', modalidad:'Virtual · Gratis', duracion:'40 h', valor:'Gratis', link:'https://betowa.sena.edu.co/oferta/bases-de-datos-generalidades-y-sistemas-de-gestion?programId=73885&modality=V&level=11&technology=1' },
+          { nombre:'Comunicación en Equipos de Trabajo', modalidad:'Virtual · Gratis', duracion:'48 h', valor:'Gratis', link:'http://betowa.sena.edu.co/oferta/comunicacion-en-equipos-de-trabajo?programId=171415&modality=V&level=11&technology=1' },
+          { nombre:'Desarrollo de Habilidades Digitales para la Gestión de la Información', modalidad:'Virtual · Gratis', duracion:'48 h', valor:'Gratis', link:'https://betowa.sena.edu.co/oferta/desarrollo-de-habilidades-digitales-para-la-gestion-de-la-informacion?programId=159534&modality=V&level=11&technology=1' },
+          { nombre:'Excel Avanzado: Gestión Estratégica de Información', modalidad:'Virtual · Gratis', duracion:'48 h', valor:'Gratis', link:'https://betowa.sena.edu.co/oferta/desarrollo-de-habilidades-digitales-para-la-gestion-de-la-informacion?programId=159534&modality=V&level=11&technology=1' }
+        ]
+      },
+      {
+        nombre:'CENTAC',
+        sigla:'CEN',
+        color:'cafe',
+        programas:[
+          { nombre:'Refrigeración e Instalación de Aires Acondicionados', modalidad:'Presencial', duracion:'40 h', valor:'$1.650.000', aviso:'Convenio institucional — consultar con Medición por Competencias' }
+        ]
+      }
+    ]
+  }
+];
+
+function vistaFormacion(){
+  const f=lienzo(false);
+  // Encabezado
+  const cab=document.createElement('div'); cab.className='seccion-cab';
+  cab.innerHTML='<div><h2 class="titulo-pag">Educación a tu medida</h2>'+
+    '<p class="lead-pag">Convenios y programas disponibles para colaboradores de '+esc(CONFIG.nombreOrg)+'. Selecciona la categoría que te interesa.</p></div>';
+  f.appendChild(cab);
+
+  // Estado de la pestaña activa
+  let catActiva=PORTAFOLIO[0].id;
+
+  // Contenedor de pestañas
+  const tabsEl=document.createElement('div'); tabsEl.className='form-tabs';
+  f.appendChild(tabsEl);
+
+  // Zona de contenido
+  const zonaEl=document.createElement('div');
+  f.appendChild(zonaEl);
+
+  function renderCat(){
+    // Tabs
+    tabsEl.innerHTML='';
+    PORTAFOLIO.forEach(cat=>{
+      const btn=document.createElement('button');
+      btn.className='form-tab'+(cat.id===catActiva?' activa':'');
+      btn.innerHTML=cat.label+'<small style="display:block;font-size:11px;font-weight:500;opacity:.7;margin-top:1px;">'+cat.desc+'</small>';
+      btn.addEventListener('click',()=>{ catActiva=cat.id; renderCat(); });
+      tabsEl.appendChild(btn);
+    });
+
+    // Contenido de la categoría activa
+    zonaEl.innerHTML='';
+    const cat=PORTAFOLIO.find(c=>c.id===catActiva);
+    if(!cat) return;
+
+    const tit=document.createElement('p'); tit.className='form-cat-sub';
+    tit.textContent=cat.programas_total||cat.desc;
+    zonaEl.appendChild(tit);
+
+    cat.instituciones.forEach(inst=>{
+      const bloque=document.createElement('div'); bloque.className='inst-bloque';
+
+      const encInst=document.createElement('div'); encInst.className='inst-titulo';
+      const logo=document.createElement('div');
+      logo.className='inst-logo '+(inst.color||'azul');
+      logo.textContent=inst.sigla;
+      encInst.appendChild(logo);
+      const textoInst=document.createElement('div');
+      textoInst.innerHTML='<p class="inst-nombre">'+esc(inst.nombre)+'</p>';
+      encInst.appendChild(textoInst);
+      bloque.appendChild(encInst);
+
+      const rejilla=document.createElement('div'); rejilla.className='prog-rejilla';
+      inst.programas.forEach(prog=>{
+        const card=document.createElement('div'); card.className='prog-card';
+        const esGratis=prog.valor==='Gratis';
+        const modalidadBadge=prog.modalidad.toLowerCase().includes('presencial')?'presencial':'';
+        card.innerHTML=
+          '<h4>'+esc(prog.nombre)+'</h4>'+
+          '<div class="prog-meta">'+
+            '<span class="prog-badge">'+esc(prog.duracion)+'</span>'+
+            '<span class="prog-badge '+(modalidadBadge)+'">'+esc(prog.modalidad.split('·')[0].trim())+'</span>'+
+          '</div>'+
+          '<p class="prog-valor">'+esc(prog.valor)+(esGratis?'':' <span>por semestre/curso</span>')+'</p>'+
+          (prog.aviso?'<p class="prog-link-aviso">📋 '+esc(prog.aviso)+'</p>':
+            (prog.link?'<a class="prog-link" href="'+esc(prog.link)+'" target="_blank" rel="noopener">Ver programa ↗</a>':''));
+        rejilla.appendChild(card);
+      });
+      bloque.appendChild(rejilla);
+      zonaEl.appendChild(bloque);
+    });
+  }
+
+  renderCat();
 }
 
 /* ---------- Preguntas frecuentes ---------- */
