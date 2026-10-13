@@ -17,18 +17,15 @@
      ===================================================================== -->
 <script>
 const CONFIG = {
-  // 1) Pega la misma configuración de Firebase del artefacto administrativo (☁ Nube).
   firebase: {
-    // apiKey: "...",
-    // authDomain: "cartografia-talento.firebaseapp.com",
-    // projectId: "cartografia-talento",
-    // storageBucket: "...",
-    // messagingSenderId: "...",
-    // appId: "..."
+    apiKey: "AIzaSyCJAoAWJhIQoYBi8jXIYfqrGWi30IJKA9s",
+    authDomain: "cartografia-talento.firebaseapp.com",
+    projectId: "cartografia-talento",
+    storageBucket: "cartografia-talento.firebasestorage.app",
+    messagingSenderId: "42862317480",
+    appId: "1:42862317480:web:7926aafd9bf37c6224979d"
   },
-  // 2) El mismo código de organización que usas en el artefacto.
-  orgCode: "",
-  // 3) Marca.
+  orgCode: "competencias2026",
   nombreOrg: "AVSA",
   titulo: "Plan Carrera",
   bajada: "",
@@ -450,13 +447,14 @@ const PREGUNTAS = [
    =================================================================== */
 const COL_PUBLICA = 'cartografia_publico';
 const COL_POSTULACIONES = 'cartografia_postulaciones';
+const COL_FORMACION = 'cartografia_formacion';
 const CLAVE_MIS_POST = 'plan-carrera-mis-postulaciones';
 
 const params = new URLSearchParams(location.search);
 const ORG_CODE = (params.get('org') || CONFIG.orgCode || '').trim();
 const hayFirebase = !!(CONFIG.firebase && CONFIG.firebase.projectId) && !!ORG_CODE;
 
-let db=null, datos=null, modoDemo=false;
+let db=null, datos=null, modoDemo=false, portafolioDinamico=null;
 let vista='inicio', areaSel=null, cargoSel=null, resultado=null;
 let marcados=new Set(), busqueda='', enviando=false, errorEnvio='', codigoRef='';
 
@@ -587,10 +585,14 @@ async function cargar(){
   try{
     if(!firebase.apps.length) firebase.initializeApp(CONFIG.firebase);
     db=firebase.firestore();
-    const doc=await db.collection(COL_PUBLICA).doc(ORG_CODE).get();
-    datos=(doc.exists && doc.data() && doc.data().payload)
-      ? JSON.parse(doc.data().payload)
+    const [docPublico, docFormacion] = await Promise.all([
+      db.collection(COL_PUBLICA).doc(ORG_CODE).get(),
+      db.collection(COL_FORMACION).doc(ORG_CODE).get()
+    ]);
+    datos=(docPublico.exists && docPublico.data() && docPublico.data().payload)
+      ? JSON.parse(docPublico.data().payload)
       : { orgName:CONFIG.nombreOrg, areas:[] };
+    portafolioDinamico = docFormacion.exists ? docFormacion.data() : null;
   }catch(e){
     modoDemo=true; datos=datosDemo();
     avisar('malo','No pudimos conectarnos para traer los cargos. Estás viendo un ejemplo. Intenta más tarde o avisa a Gestión Humana.');
@@ -1329,8 +1331,21 @@ function vistaFormacion(){
     '<p class="lead-pag">Convenios y programas disponibles para colaboradores de '+esc(CONFIG.nombreOrg)+'. Selecciona la categoría que te interesa.</p></div>';
   f.appendChild(cab);
 
+  // Usa el portafolio guardado en la nube; si no hay, usa el bloque estático
+  const fuentePortafolio = (portafolioDinamico && portafolioDinamico.categorias && portafolioDinamico.categorias.length)
+    ? portafolioDinamico.categorias
+    : PORTAFOLIO;
+
+  // Si la nube no tiene nada todavía, avisa
+  if(!portafolioDinamico && hayFirebase){
+    const avF=document.createElement('p');
+    avF.style.cssText='font-size:14px;color:#888;margin:0 0 18px';
+    avF.textContent='Aún no hay programas cargados desde la nube. Gestión Humana los agregará desde el artefacto administrativo.';
+    f.appendChild(avF);
+  }
+
   // Estado de la pestaña activa
-  let catActiva=PORTAFOLIO[0].id;
+  let catActiva=fuentePortafolio[0] ? fuentePortafolio[0].id : '';
 
   // Contenedor de pestañas
   const tabsEl=document.createElement('div'); tabsEl.className='form-tabs';
@@ -1343,7 +1358,7 @@ function vistaFormacion(){
   function renderCat(){
     // Tabs
     tabsEl.innerHTML='';
-    PORTAFOLIO.forEach(cat=>{
+    fuentePortafolio.forEach(cat=>{
       const btn=document.createElement('button');
       btn.className='form-tab'+(cat.id===catActiva?' activa':'');
       btn.innerHTML=cat.label+'<small style="display:block;font-size:11px;font-weight:500;opacity:.7;margin-top:1px;">'+cat.desc+'</small>';
@@ -1353,7 +1368,7 @@ function vistaFormacion(){
 
     // Contenido de la categoría activa
     zonaEl.innerHTML='';
-    const cat=PORTAFOLIO.find(c=>c.id===catActiva);
+    const cat=fuentePortafolio.find(c=>c.id===catActiva);
     if(!cat) return;
 
     const tit=document.createElement('p'); tit.className='form-cat-sub';
