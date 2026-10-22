@@ -28,6 +28,7 @@ const CONFIG = {
   orgCode: "competencias2026",
   nombreOrg: "AVSA",
   titulo: "Plan Carrera",
+  politicaUrl: "",   // enlace público a la Política de Tratamiento de Datos Personales de AVSA
   bajada: "",
   lema: ""
 };
@@ -1004,7 +1005,7 @@ function vistaPostular(){
         'background:var(--blanco);position:relative;margin-top:2px;" onclick="this.style.background=this.checked?\'#3F7A57\':\'\'">'+
       '<span style="font-size:15px;line-height:1.5;">'+
         'Autorizo a <strong>AVSA S.A.</strong> para recolectar y tratar mis datos personales con el fin de gestionar mi postulación al plan de carrera, '+
-        'de acuerdo con la <strong>Política de Tratamiento de Datos Personales</strong> de la organización. '+
+        'de acuerdo con la '+(/^https:\/\//.test(CONFIG.politicaUrl||'')?'<a href="'+esc(CONFIG.politicaUrl)+'" target="_blank" rel="noopener"><strong>Política de Tratamiento de Datos Personales</strong></a>':'<strong>Política de Tratamiento de Datos Personales</strong>')+' de la organización. '+
         'Entiendo que mis datos serán usados únicamente para este proceso y que puedo solicitar su eliminación en cualquier momento al área de Gestión Humana.'+
       '</span>'+
     '</label>';
@@ -1077,11 +1078,16 @@ async function enviar(){
     nombre:valorDe('nombre'), documento:valorDe('documento'), celular:valorDe('celular'),
     correo:valorDe('correo'), cargoActual:valorDe('cargoActual'), sede:valorDe('sede'),
     motivacion:valorDe('motivo'), ajustePct:r.pct,
+    autorizacion:true, autorizacionFecha:new Date().toISOString(), autorizacionVersion:'v1',
     requisitosClaveTotal:r.claves.length, requisitosClaveCumplidos:r.clavesOk.length,
     cumple:r.tiene.map(x=>x.texto), leFalta:r.faltan.map(x=>x.texto), estado:'nueva'
   };
 
-  if(modoDemo||!db){ guardarLocal(registro); enviando=false; ir('listo'); return; }
+  if(modoDemo||!db){
+    enviando=false;
+    errorEnvio='No hay conexión con el sistema, así que tu postulación NO se envió. Inténtalo más tarde o avisa a Gestión Humana.';
+    pintar(); return;
+  }
   try{
     registro.creadoEn=firebase.firestore.FieldValue.serverTimestamp();
     await db.collection(COL_POSTULACIONES).add(registro);
@@ -1401,7 +1407,7 @@ function vistaFormacion(){
           '</div>'+
           '<p class="prog-valor">'+esc(prog.valor)+(esGratis?'':' <span>por semestre/curso</span>')+'</p>'+
           (prog.aviso?'<p class="prog-link-aviso">📋 '+esc(prog.aviso)+'</p>':
-            (prog.link?'<a class="prog-link" href="'+esc(prog.link)+'" target="_blank" rel="noopener">Ver programa ↗</a>':''));
+            (/^https?:\/\//.test(prog.link||'')?'<a class="prog-link" href="'+esc(prog.link)+'" target="_blank" rel="noopener">Ver programa ↗</a>':''));
         rejilla.appendChild(card);
       });
       bloque.appendChild(rejilla);
